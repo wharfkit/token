@@ -1,33 +1,21 @@
 import 'mocha'
 import {strict as assert} from 'assert'
-import fetch from 'node-fetch'
 
-import {Asset, APIClient} from '@wharfkit/antelope'
+import {APIClient, Asset} from '@wharfkit/antelope'
 
-import {PowerUpState, Resources} from '../src'
+import {Balance} from '../src'
 
-suite('core', function () {
+suite('Balance', function () {
     this.slow(20000)
-    test('init - url + fetch', async function () {
+    test('fetch() returns an Asset', async function () {
         // pass fetch and url to resources directly
-        const test = new Resources({
-            url: 'https://eos.greymass.com',
-            fetch,
+        const balance = new Balance({
+            accountName: 'eosio',
+            contract: 'eosio.token',
+            apiClient: new APIClient({url: 'https://eos.greymass.com'}),
         })
         // perform test
-        const state = await test.v1.powerup.get_state()
-        assert.equal(state instanceof PowerUpState, true)
-    })
-    test('init - api + url + fetch', async function () {
-        // setup custom APIClient
-        const api = new APIClient({
-            url: 'https://eos.greymass.com',
-            fetch,
-        })
-        // pass API to resources
-        const test = new Resources({api})
-        // perform test
-        const state = await test.v1.powerup.get_state()
-        assert.equal(state instanceof PowerUpState, true)
+        const result = await balance.fetch()
+        assert.equal(result instanceof Asset, true)
     })
 })
