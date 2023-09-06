@@ -1,13 +1,16 @@
+SHELL := /bin/bash
 SRC_FILES := $(shell find src -name '*.ts')
+TEST_FILES := $(wildcard test/tests/*.ts)
 BIN := ./node_modules/.bin
+MOCHA_OPTS := -u tdd -r ts-node/register -r tsconfig-paths/register --extension ts
 
 lib: ${SRC_FILES} package.json tsconfig.json node_modules rollup.config.js
 	@${BIN}/rollup -c && touch lib
 
 .PHONY: test
 test: node_modules
-	@TS_NODE_PROJECT='./test/tsconfig.json' ${BIN}/mocha \
-		-u tdd -r ts-node/register --extension ts test/*.ts --grep '$(grep)'
+	@TS_NODE_PROJECT='./test/tsconfig.json' MOCK_DIR='./test/data' \
+		${BIN}/mocha ${MOCHA_OPTS} test/tests/*.ts --grep '$(grep)'
 
 .PHONY: coverage
 coverage: node_modules
@@ -15,14 +18,19 @@ coverage: node_modules
 		${BIN}/mocha -u tdd -r ts-node/register --extension ts test/*.ts \
 		-R nyan && open coverage/index.html
 
-.PHONY: lint
-lint: node_modules
-	@${BIN}/eslint src --ext .ts --fix
+.PHONY: check
+check: node_modules
+	@${BIN}/eslint src --ext .ts --max-warnings 0 --format unix && echo "Ok"
+
+.PHONY: format
+format: node_modules
+	@${BIN}/eslint src test --ext .ts --fix
 
 .PHONY: ci-test
 ci-test: node_modules
-	@TS_NODE_PROJECT='./test/tsconfig.json' ${BIN}/nyc --reporter=text \
-		${BIN}/mocha -u tdd -r ts-node/register --extension ts test/*.ts -R list
+	@TS_NODE_PROJECT='./test/tsconfig.json' MOCK_DIR='./test/data' \
+		${BIN}/nyc ${NYC_OPTS} --reporter=text \
+		${BIN}/mocha ${MOCHA_OPTS} -R list test/tests/*.ts
 
 .PHONY: ci-lint
 ci-lint: node_modules

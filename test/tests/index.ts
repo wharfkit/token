@@ -1,18 +1,20 @@
-import 'mocha'
 import {strict as assert} from 'assert'
 
-import {APIClient, Asset} from '@wharfkit/antelope'
+import {Asset} from '@wharfkit/antelope'
+import {makeClient} from '@wharfkit/mock-data'
 
-import {Balance} from '../src'
+const apiClient = makeClient('https://jungle4.greymass.com')
+
+import {Balance} from '../../src'
 
 suite('Balance', function () {
     this.slow(20000)
     test('fetch() returns an Asset', async function () {
         // pass fetch and url to resources directly
         const balance = new Balance({
-            accountName: 'eosio',
+            accountName: 'teamgreymass',
             contract: 'eosio.token',
-            apiClient: new APIClient({url: 'https://eos.greymass.com'}),
+            apiClient,
         })
         // perform test
         const result = await balance.fetch()

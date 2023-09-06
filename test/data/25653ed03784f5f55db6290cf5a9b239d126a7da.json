@@ -1,0 +1,14 @@
+{
+    "request": {
+        "path": "https://jungle4.greymass.com/v1/chain/get_currency_balance",
+        "params": {
+            "method": "POST",
+            "body": "{\"account\":\"teamgreymass\",\"code\":\"eosio.token\",\"symbol\":\"EOS\"}"
+        }
+    },
+    "status": 200,
+    "json": [
+        "14.7187 EOS"
+    ],
+    "text": "[\"14.7187 EOS\"]"
+}

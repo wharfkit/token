@@ -1,4 +1,4 @@
-import {APIClient, Asset, NameType} from '@wharfkit/antelope'
+import {APIClient, Asset, Name, NameType} from '@wharfkit/antelope'
 
 interface BalanceOptions {
     accountName: NameType
@@ -8,25 +8,29 @@ interface BalanceOptions {
 }
 
 export class Balance {
-    readonly accountName: NameType
-    readonly contract: NameType
-    readonly symbol: Asset.SymbolType = '4,EOS'
+    readonly accountName: Name
+    readonly contract: Name
+    readonly symbol: Asset.Symbol
     readonly apiClient: APIClient
 
     constructor({accountName, contract, symbol, apiClient}: BalanceOptions) {
-        this.accountName = accountName
-        this.contract = contract
-        this.symbol = symbol || this.symbol
+        this.accountName = Name.from(accountName)
+        this.contract = Name.from(contract)
+        this.symbol = Asset.Symbol.from(symbol || '4,EOS')
         this.apiClient = apiClient
+    }
+
+    get symbolCode(): Asset.SymbolCode {
+        return this.symbol.code
     }
 
     fetch(): Promise<Asset> {
         return new Promise((resolve, reject) => {
             this.apiClient.v1.chain
                 .get_currency_balance(
-                    this.contract,
+                    String(this.contract),
                     String(this.accountName),
-                    this.symbol && String(this.symbol)
+                    String(this.symbolCode)
                 )
                 .then((balances) => {
                     const balance = (balances as any)[0]
@@ -34,7 +38,7 @@ export class Balance {
                     if (!balance) {
                         reject(
                             new Error(
-                                `No balance found for ${this.symbol} token of ${this.contract} contract.`
+                                `No "${this.symbol.code}" balance found for "${this.accountName}" token on "${this.contract}" contract.`
                             )
                         )
                     }
