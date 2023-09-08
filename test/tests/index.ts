@@ -5,19 +5,42 @@ import {makeClient} from '@wharfkit/mock-data'
 
 const apiClient = makeClient('https://jungle4.greymass.com')
 
-import {Balance} from '../../src'
+import {Token} from '../../src'
 
-suite('Balance', function () {
+suite('Token', function () {
     this.slow(20000)
-    test('fetch() returns an Asset', async function () {
-        // pass fetch and url to resources directly
-        const balance = new Balance({
-            accountName: 'teamgreymass',
-            contract: 'eosio.token',
-            apiClient,
+
+    suite('balance()', function () {
+        test('returns the system token balance of an account when no symbol code is passed', async function () {
+            const balance = new Token({
+                apiClient,
+            })
+            const result = await balance.balance('teamgreymass')
+            assert.equal(result instanceof Asset, true)
+            assert.equal(String(result.symbol.code), 'EOS')
         })
-        // perform test
-        const result = await balance.fetch()
-        assert.equal(result instanceof Asset, true)
+
+        test('returns the balance of an account for a specific symbol', async function () {
+            const balance = new Token({
+                apiClient,
+            })
+            const result = await balance.balance('teamgreymass', 'EOS')
+            assert.equal(result instanceof Asset, true)
+            assert.equal(String(result.symbol.code), 'EOS')
+        })
+
+        test('throws an error when the account does not exist', async function () {
+            const balance = new Token({
+                apiClient,
+            })
+            await assert.rejects(() => balance.balance('notanaccount'))
+        })
+
+        test('throws an error when the symbol does not exist', async function () {
+            const balance = new Token({
+                apiClient,
+            })
+            await assert.rejects(() => balance.balance('teamgreymass', 'NOT'))
+        })
     })
 })

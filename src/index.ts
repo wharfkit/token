@@ -1,59 +1,46 @@
 import {APIClient, Asset, Name, NameType} from '@wharfkit/antelope'
+import * as SystemTokenContract from './contracts/system.token'
 
 interface BalanceOptions {
-    accountName: NameType
-    contract: NameType
     apiClient: APIClient
-    symbol?: Asset.SymbolType
 }
 
-export class Balance {
-    readonly accountName: Name
-    readonly contract: Name
-    readonly symbol: Asset.Symbol
-    readonly apiClient: APIClient
+export class Token {
+    readonly systemTokenContract: SystemTokenContract.Contract
 
-    constructor({accountName, contract, symbol, apiClient}: BalanceOptions) {
-        this.accountName = Name.from(accountName)
-        this.contract = Name.from(contract)
-        this.symbol = Asset.Symbol.from(symbol || '4,EOS')
-        this.apiClient = apiClient
+    constructor({apiClient}: BalanceOptions) {
+        this.systemTokenContract = new SystemTokenContract.Contract({client: apiClient})
     }
 
-    get symbolCode(): Asset.SymbolCode {
-        return this.symbol.code
-    }
+    balance(accountName: NameType, symbolCode?: Asset.SymbolCodeType): Promise<Asset> {
+        return this.systemTokenContract
+            .table('accounts', accountName)
+            .all()
+            .then((accountBalances) => {
+                let accountBalance
 
-    fetch(): Promise<Asset> {
-        return new Promise((resolve, reject) => {
-            this.apiClient.v1.chain
-                .get_currency_balance(
-                    String(this.contract),
-                    String(this.accountName),
-                    String(this.symbolCode)
-                )
-                .then((balances) => {
-                    const balance = (balances as any)[0]
+                if (symbolCode) {
+                    accountBalance = accountBalances.find((account) =>
+                        account.balance.symbol.code.equals(symbolCode)
+                    )
 
-                    if (!balance) {
-                        reject(
-                            new Error(
-                                `No "${this.symbol.code}" balance found for "${this.accountName}" token on "${this.contract}" contract.`
-                            )
+                    if (!accountBalance) {
+                        throw new Error(
+                            `No balance found for ${accountName} with symbol ${symbolCode}.`
                         )
                     }
+                } else {
+                    accountBalance = accountBalances?.[0]
 
-                    resolve(balance)
-                })
-                .catch((err) => {
-                    if (
-                        err.message.includes('No data') ||
-                        err.message.includes('Account Query Exception')
-                    ) {
-                        reject(new Error(`Token contract ${this.contract} does not exist.`))
+                    if (!accountBalance) {
+                        throw new Error(`No balances found for ${accountName}.`)
                     }
-                    reject(err)
-                })
-        })
+                }
+
+                return accountBalance?.balance
+            })
+            .catch((err) => {
+                throw new Error(`Failed to fetch balance for ${accountName}: ${err}`)
+            })
     }
 }
