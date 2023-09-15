@@ -1,40 +1,38 @@
-import {APIClient, Asset, Name, NameType} from '@wharfkit/antelope'
+import {APIClient, Asset, AssetType, Name, NameType} from '@wharfkit/antelope'
 import * as SystemTokenContract from './contracts/system.token'
+import {Contract} from '@wharfkit/contract'
 
 interface TokenOptions {
-    apiClient: APIClient
-    systemTokenSymbol?: Asset.SymbolType
+    client: APIClient
+    tokenSymbol?: Asset.SymbolType
+    contract?: Contract
 }
 
 export class Token {
-    readonly systemTokenContract: SystemTokenContract.Contract
-    readonly systemTokenSymbol: Asset.SymbolType
+    readonly contract: Contract
+    readonly tokenSymbol: Asset.SymbolType
 
-    constructor({apiClient, systemTokenSymbol}: TokenOptions) {
-        this.systemTokenContract = new SystemTokenContract.Contract({client: apiClient})
-        this.systemTokenSymbol = systemTokenSymbol || '4,EOS'
+    constructor({contract, client, tokenSymbol}: TokenOptions) {
+        this.contract = contract || new SystemTokenContract.Contract({client})
+        this.tokenSymbol = tokenSymbol || '4,EOS'
     }
 
     async transfer(
         from: NameType,
         to: NameType,
-        amount: number,
+        amount: number | AssetType,
         memo = '',
-        symbolType: Asset.SymbolType = this.systemTokenSymbol
+        symbolType: Asset.SymbolType = this.tokenSymbol
     ) {
-        const symbol = Asset.Symbol.from(symbolType)
-        const senderBalance = await this.balance(from, symbol.code)
+        let quantity
 
-        // check recipient balance to make sure that it exists
-        await this.balance(to, symbol.code)
-
-        const quantity = Asset.from(amount, symbol)
-
-        if (senderBalance.value < amount) {
-            throw new Error(`Insufficient funds for ${from} to transfer ${quantity} to ${to}.`)
+        if (typeof amount === 'number') {
+            quantity = Asset.from(amount, symbolType)
+        } else {
+            quantity = Asset.from(amount)
         }
 
-        return this.systemTokenContract.action('transfer', {
+        return this.contract.action('transfer', {
             from: Name.from(from),
             to: Name.from(to),
             quantity,
@@ -43,7 +41,7 @@ export class Token {
     }
 
     balance(accountName: NameType, symbolCode?: Asset.SymbolCodeType): Promise<Asset> {
-        return this.systemTokenContract
+        return this.contract
             .table('accounts', accountName)
             .all()
             .then((accountBalances) => {
