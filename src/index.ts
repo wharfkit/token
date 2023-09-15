@@ -41,32 +41,28 @@ export class Token {
     }
 
     balance(accountName: NameType, symbolCode?: Asset.SymbolCodeType): Promise<Asset> {
-        return this.contract
-            .table('accounts', accountName)
-            .all()
-            .then((accountBalances) => {
-                if (!accountBalances) {
+        const table = this.contract.table('accounts', accountName)
+
+        let tableQuery
+
+        if (symbolCode) {
+            tableQuery = table.get(String(symbolCode), {index_position: 'primary'})
+        } else {
+            tableQuery = table.get()
+        }
+
+        return tableQuery
+            .then((accountBalance) => {
+                console.log({
+                    accountBalance: String(accountBalance.balance.symbol.code),
+                    symbolCode,
+                })
+                if (!accountBalance) {
                     throw new Error(`Account ${accountName} does not exist.`)
                 }
 
-                let accountBalance
-
-                if (symbolCode) {
-                    accountBalance = accountBalances.find((account) => {
-                        return account.balance.symbol.code.equals(symbolCode)
-                    })
-
-                    if (!accountBalance) {
-                        throw new Error(
-                            `No balance found for ${accountName} with symbol ${symbolCode}.`
-                        )
-                    }
-                } else {
-                    accountBalance = accountBalances[0]
-
-                    if (!accountBalance) {
-                        throw new Error(`No balances found for ${accountName}.`)
-                    }
+                if (symbolCode && !accountBalance.balance.symbol.code.equals(symbolCode)) {
+                    throw new Error(`Symbol '${symbolCode}' does not exist.`)
                 }
 
                 return accountBalance?.balance

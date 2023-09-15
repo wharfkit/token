@@ -11,7 +11,7 @@ import {Token} from '../../src'
 
 suite('Token', function () {
     const token = new Token({
-        apiClient,
+        client: apiClient,
     })
 
     this.slow(20000)
