@@ -53,10 +53,6 @@ export class Token {
 
         return tableQuery
             .then((accountBalance) => {
-                console.log({
-                    accountBalance: String(accountBalance.balance.symbol.code),
-                    symbolCode,
-                })
                 if (!accountBalance) {
                     throw new Error(`Account ${accountName} does not exist.`)
                 }

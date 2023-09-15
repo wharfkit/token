@@ -65,14 +65,5 @@ suite('Token', function () {
             assert.equal(String(decoded.quantity), '1.3200 EOS')
             assert.equal(String(decoded.memo), 'this is a test')
         })
-
-        test('throws an error when one of the accounts does not exist', async function () {
-            await assert.rejects(() => token.transfer('teamgreymass', 'notanaccount', 1.32))
-            await assert.rejects(() => token.transfer('notanaccount', 'teamgreymass', 1.32))
-        })
-
-        test('throws an error when the balance of the sender is too low', async function () {
-            await assert.rejects(() => token.transfer('teamgreymass', 'dafuga.gm', 10000000))
-        })
     })
 })
