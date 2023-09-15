@@ -10,27 +10,13 @@ interface TokenOptions {
 
 export class Token {
     readonly contract: Contract
-    readonly tokenSymbol: Asset.SymbolType
 
-    constructor({contract, client, tokenSymbol}: TokenOptions) {
+    constructor({contract, client}: TokenOptions) {
         this.contract = contract || new SystemTokenContract.Contract({client})
-        this.tokenSymbol = tokenSymbol || '4,EOS'
     }
 
-    async transfer(
-        from: NameType,
-        to: NameType,
-        amount: number | AssetType,
-        memo = '',
-        symbolType: Asset.SymbolType = this.tokenSymbol
-    ) {
-        let quantity
-
-        if (typeof amount === 'number') {
-            quantity = Asset.from(amount, symbolType)
-        } else {
-            quantity = Asset.from(amount)
-        }
+    async transfer(from: NameType, to: NameType, amount: AssetType, memo = '') {
+        const quantity = Asset.from(amount)
 
         return this.contract.action('transfer', {
             from: Name.from(from),

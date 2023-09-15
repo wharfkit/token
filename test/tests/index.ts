@@ -49,7 +49,7 @@ suite('Token', function () {
             const action = await token.transfer(
                 'teamgreymass',
                 'teamgreymass',
-                1.32,
+                '1.3200 EOS',
                 'this is a test'
             )
 
