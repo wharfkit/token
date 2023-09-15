@@ -1,13 +1,15 @@
-# eosio-resources
+# @wharfkit/balances
+
+# THIS IS A WORK IN PROGRESS, USE AT YOUR OWN RISK
 
 ## Installation
 
-The `@wharfkit/resources` package is distributed on [npm](https://www.npmjs.com/package/@wharfkit/resources).
+The `@wharfkit/balances` package is distributed on [npm](https://www.npmjs.com/package/@wharfkit/resources).
 
 ```
-yarn add @wharfkit/resources
+yarn add @wharfkit/balances
 # or
-npm install --save @wharfkit/resources
+npm install --save @wharfkit/balances
 ```
 
 ## Usage

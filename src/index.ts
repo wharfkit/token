@@ -1,87 +1,56 @@
-import {API, APIClient, APIClientOptions, FetchProvider, UInt128} from '@wharfkit/antelope'
-import BN from 'bn.js'
+import {APIClient, Asset, AssetType, Name, NameType} from '@wharfkit/antelope'
+import * as SystemTokenContract from './contracts/system.token'
+import {Contract} from '@wharfkit/contract'
 
-import {PowerUpAPI} from './powerup'
-import {RAMAPI} from './ram'
-import {REXAPI} from './rex'
-
-export * from './powerup'
-export * from './ram'
-export * from './rex'
-
-interface ResourcesOptions extends APIClientOptions {
-    api?: APIClient
-    sampleAccount?: string
-    symbol?: string
-    url?: string
+interface TokenOptions {
+    client: APIClient
+    tokenSymbol?: Asset.SymbolType
+    contract?: Contract
 }
 
-export interface SampleUsage {
-    account: API.v1.AccountObject
-    cpu: UInt128
-    net: UInt128
-}
+export class Token {
+    readonly contract: Contract
 
-export const BNPrecision = new BN(1000 * 1000)
+    constructor({contract, client}: TokenOptions) {
+        this.contract = contract || new SystemTokenContract.Contract({client})
+    }
 
-export class Resources {
-    static __className = 'Resources'
+    async transfer(from: NameType, to: NameType, amount: AssetType, memo = '') {
+        const quantity = Asset.from(amount)
 
-    readonly api: APIClient
+        return this.contract.action('transfer', {
+            from: Name.from(from),
+            to: Name.from(to),
+            quantity,
+            memo,
+        })
+    }
 
-    // the account to use when sampling usage
-    sampleAccount = 'b1'
+    balance(accountName: NameType, symbolCode?: Asset.SymbolCodeType): Promise<Asset> {
+        const table = this.contract.table('accounts', accountName)
 
-    // token precision/symbol
-    symbol = '4,EOS'
+        let tableQuery
 
-    constructor(options: ResourcesOptions) {
-        // Allow overriding of the sample account name
-        if (options.sampleAccount) {
-            this.sampleAccount = options.sampleAccount
-        }
-        // Allow overriding of the system token symbol
-        if (options.symbol) {
-            this.symbol = options.symbol
-        }
-        // Allow variations on how to specify the API configuration
-        if (options.api) {
-            this.api = options.api
-        } else if (options.url) {
-            this.api = new APIClient({provider: new FetchProvider(options.url, options)})
+        if (symbolCode) {
+            tableQuery = table.get(String(symbolCode), {index_position: 'primary'})
         } else {
-            throw new Error('Missing url or api client')
+            tableQuery = table.get()
         }
+
+        return tableQuery
+            .then((accountBalance) => {
+                if (!accountBalance) {
+                    throw new Error(`Account ${accountName} does not exist.`)
+                }
+
+                if (symbolCode && !accountBalance.balance.symbol.code.equals(symbolCode)) {
+                    throw new Error(`Symbol '${symbolCode}' does not exist.`)
+                }
+
+                return accountBalance?.balance
+            })
+            .catch((err) => {
+                throw new Error(`Failed to fetch balance for ${accountName}: ${err}`)
+            })
     }
-
-    v1 = {
-        powerup: new PowerUpAPI(this),
-        ram: new RAMAPI(this),
-        rex: new REXAPI(this),
-    }
-
-    async getSampledUsage(): Promise<SampleUsage> {
-        const account = await this.api.v1.chain.get_account(this.sampleAccount)
-        const us = UInt128.from(account.cpu_limit.max.value.mul(BNPrecision))
-        const byte = UInt128.from(account.net_limit.max.value.mul(BNPrecision))
-
-        const cpu_weight = UInt128.from(account.cpu_weight.value)
-        const net_weight = UInt128.from(account.net_weight.value)
-
-        return {
-            account,
-            cpu: divCeil(us.value, cpu_weight.value),
-            net: divCeil(byte.value, net_weight.value),
-        }
-    }
-}
-
-function divCeil(num: BN, den: BN): UInt128 {
-    let v: BN = num.div(den)
-    const zero = new BN(0)
-    const one = new BN(1)
-    if (num.mod(den).gt(zero)) {
-        v = v.sub(one)
-    }
-    return UInt128.from(v)
 }
