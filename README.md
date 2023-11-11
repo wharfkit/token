@@ -1,15 +1,13 @@
-# @wharfkit/balances
-
-# THIS IS A WORK IN PROGRESS, USE AT YOUR OWN RISK
+# @wharfkit/token
 
 ## Installation
 
-The `@wharfkit/balances` package is distributed on [npm](https://www.npmjs.com/package/@wharfkit/resources).
+The `@wharfkit/token` package is distributed on [npm](https://www.npmjs.com/package/@wharfkit/resources).
 
 ```
-yarn add @wharfkit/balances
+yarn add @wharfkit/token
 # or
-npm install --save @wharfkit/balances
+npm install --save @wharfkit/token
 ```
 
 ## Usage
