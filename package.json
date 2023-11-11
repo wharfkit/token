@@ -1,7 +1,7 @@
 {
     "name": "@wharfkit/token",
     "description": "Library to work with Antelope-blockchain system tokens.",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "homepage": "https://github.com/wharfkit/token",
     "license": "BSD-3-Clause",
     "main": "lib/wharfkit-token.js",
