@@ -29,6 +29,13 @@ suite('Token', function () {
             assert.equal(String(result.symbol.code), 'EOS')
         })
 
+        test('returns the balance of an account for a specific symbol and contract', async function () {
+            const result = await token.balance('teamgreymass', 'USDT', 'tethertether')
+
+            assert.equal(result instanceof Asset, true)
+            assert.equal(String(result.symbol.code), 'USDT')
+        })
+
         test('throws an error when the account does not exist', async function () {
             await assert.rejects(
                 () => token.balance('notanaccount'),
