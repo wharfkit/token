@@ -5,7 +5,7 @@ import {makeClient} from '@wharfkit/mock-data'
 
 import * as SystemTokenContract from '../../src/contracts/system.token'
 
-const apiClient = makeClient('https://jungle4.greymass.com')
+const apiClient = makeClient('https://eos.greymass.com')
 
 import {Token} from '../../src'
 

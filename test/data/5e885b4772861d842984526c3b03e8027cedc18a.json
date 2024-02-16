@@ -1,6 +1,6 @@
 {
     "request": {
-        "path": "https://jungle4.greymass.com/v1/chain/get_table_rows",
+        "path": "https://eos.greymass.com/v1/chain/get_table_rows",
         "params": {
             "method": "POST",
             "body": "{\"table\":\"accounts\",\"code\":\"eosio.token\",\"scope\":\"teamgreymass\",\"limit\":1,\"lower_bound\":\"\",\"upper_bound\":\"\",\"index_position\":\"primary\",\"key_type\":\"name\",\"json\":false}",
@@ -10,10 +10,10 @@
     "status": 200,
     "json": {
         "rows": [
-            "195803000000000004454f5300000000"
+            "20670a030000000004454f5300000000"
         ],
         "more": false,
         "next_key": ""
     },
-    "text": "{\"rows\":[\"195803000000000004454f5300000000\"],\"more\":false,\"next_key\":\"\"}"
+    "text": "{\"rows\":[\"20670a030000000004454f5300000000\"],\"more\":false,\"next_key\":\"\"}"
 }

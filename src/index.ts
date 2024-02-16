@@ -1,7 +1,6 @@
 import {APIClient, Asset, AssetType, Name, NameType} from '@wharfkit/antelope'
 import * as SystemTokenContract from './contracts/system.token'
 import {Contract, ContractKit} from '@wharfkit/contract'
-import {makeClient} from '@wharfkit/mock-data'
 
 interface TokenOptions {
     client: APIClient
@@ -9,14 +8,14 @@ interface TokenOptions {
     contract?: Contract
 }
 
-const contractKit = new ContractKit({
-    client: makeClient('https://eos.greymass.com'),
-})
-
 export class Token {
     readonly contract: Contract
+    readonly kit: ContractKit
 
     constructor({contract, client}: TokenOptions) {
+        this.kit = new ContractKit({
+            client,
+        })
         this.contract = contract || new SystemTokenContract.Contract({client})
     }
 
@@ -36,7 +35,7 @@ export class Token {
         symbolCode?: Asset.SymbolCodeType,
         contractName?: NameType
     ): Promise<Asset> {
-        const contract = contractName ? await contractKit.load(contractName) : this.contract
+        const contract = contractName ? await this.kit.load(contractName) : this.contract
         const table = contract.table('accounts', accountName)
 
         let tableQuery
