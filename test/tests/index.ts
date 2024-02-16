@@ -1,9 +1,7 @@
 import {strict as assert} from 'assert'
 
-import {Asset, Serializer} from '@wharfkit/antelope'
+import {Asset} from '@wharfkit/antelope'
 import {makeClient} from '@wharfkit/mock-data'
-
-import * as SystemTokenContract from '../../src/contracts/system.token'
 
 const apiClient = makeClient('https://eos.greymass.com')
 
@@ -62,15 +60,10 @@ suite('Token', function () {
 
             assert.equal(String(action.account), 'eosio.token')
             assert.equal(String(action.name), 'transfer')
-
-            const decoded = Serializer.decode({
-                data: action.data,
-                type: SystemTokenContract.Types.Transfer,
-            })
-            assert.equal(String(decoded.from), 'teamgreymass')
-            assert.equal(String(decoded.to), 'teamgreymass')
-            assert.equal(String(decoded.quantity), '1.3200 EOS')
-            assert.equal(String(decoded.memo), 'this is a test')
+            assert.equal(
+                action.data.hexString,
+                '80b1915e5d268dca80b1915e5d268dca903300000000000004454f53000000000e7468697320697320612074657374'
+            )
         })
     })
 })
