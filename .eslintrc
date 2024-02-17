@@ -24,6 +24,14 @@
         "@typescript-eslint/no-namespace": "off",
         "@typescript-eslint/no-non-null-assertion": "off",
         "@typescript-eslint/no-empty-function": "warn",
-        "no-inner-declarations": "off",
-    }
+        "no-inner-declarations": "off"
+    },
+    "overrides": [
+        {
+            "files": ["src/contracts/**/*"],
+            "rules": {
+                "@typescript-eslint/no-unused-vars": "off"
+            }
+        }
+    ]
 }

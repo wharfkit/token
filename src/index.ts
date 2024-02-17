@@ -1,6 +1,8 @@
 import {Action, APIClient, Asset, AssetType, Name, NameType} from '@wharfkit/antelope'
 import {Contract, ContractKit} from '@wharfkit/contract'
 
+import * as SystemTokenContract from './contracts/system.token'
+
 interface TokenOptions {
     client: APIClient
     contract?: Contract
@@ -9,21 +11,21 @@ interface TokenOptions {
 export class Token {
     client: APIClient
     contractKit: ContractKit
-    contract?: Contract
+    contract: Contract
 
     constructor({client, contract}: TokenOptions) {
         this.client = client
-        this.contract = contract
+        this.contract = contract || new SystemTokenContract.Contract({client})
         this.contractKit = new ContractKit({
-            client: client as any,
+            client: client,
         })
     }
 
-    async getContract(contractName?: string) {
+    async getContract(contractName?: NameType) {
         if (contractName) {
             return this.contractKit.load(contractName)
         }
-        return this.contract || this.contractKit.load('eosio.token')
+        return this.contract
     }
 
     async transfer(from: NameType, to: NameType, amount: AssetType, memo = ''): Promise<Action> {
@@ -40,9 +42,9 @@ export class Token {
     }
 
     async balance(
-        accountName: string,
+        accountName: NameType,
         symbolCode?: Asset.SymbolCodeType,
-        contractName?: string
+        contractName?: NameType
     ): Promise<Asset> {
         const contract = await this.getContract(contractName)
         const table = contract.table('accounts', accountName)
