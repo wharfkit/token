@@ -62,10 +62,9 @@ suite('Token', function () {
 
             assert.equal(String(action.account), 'eosio.token')
             assert.equal(String(action.name), 'transfer')
-
             const decoded = Serializer.decode({
                 data: action.data,
-                type: SystemTokenContract.Types.Transfer,
+                type: SystemTokenContract.Types.transfer,
             })
             assert.equal(String(decoded.from), 'teamgreymass')
             assert.equal(String(decoded.to), 'teamgreymass')

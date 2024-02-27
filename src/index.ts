@@ -1,28 +1,39 @@
-import {APIClient, Asset, AssetType, Name, NameType} from '@wharfkit/antelope'
-import * as SystemTokenContract from './contracts/system.token'
+import {Action, APIClient, Asset, AssetType, Name, NameType} from '@wharfkit/antelope'
 import {Contract, ContractKit} from '@wharfkit/contract'
+
+import * as SystemTokenContract from './contracts/system.token'
 
 interface TokenOptions {
     client: APIClient
-    tokenSymbol?: Asset.SymbolType
     contract?: Contract
 }
 
 export class Token {
-    readonly contract: Contract
-    readonly kit: ContractKit
+    client: APIClient
+    contractKit: ContractKit
+    contract: Contract
 
-    constructor({contract, client}: TokenOptions) {
-        this.kit = new ContractKit({
-            client,
-        })
+    constructor({client, contract}: TokenOptions) {
+        this.client = client
         this.contract = contract || new SystemTokenContract.Contract({client})
+        this.contractKit = new ContractKit({
+            client: client,
+        })
     }
 
-    async transfer(from: NameType, to: NameType, amount: AssetType, memo = '') {
+    async getContract(contractName?: NameType) {
+        if (contractName) {
+            return this.contractKit.load(contractName)
+        }
+        return this.contract
+    }
+
+    async transfer(from: NameType, to: NameType, amount: AssetType, memo = ''): Promise<Action> {
         const quantity = Asset.from(amount)
 
-        return this.contract.action('transfer', {
+        const contract = await this.getContract()
+
+        return contract.action('transfer', {
             from: Name.from(from),
             to: Name.from(to),
             quantity,
@@ -35,7 +46,7 @@ export class Token {
         symbolCode?: Asset.SymbolCodeType,
         contractName?: NameType
     ): Promise<Asset> {
-        const contract = contractName ? await this.kit.load(contractName) : this.contract
+        const contract = await this.getContract(contractName)
         const table = contract.table('accounts', accountName)
 
         let tableQuery
