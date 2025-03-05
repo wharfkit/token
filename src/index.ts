@@ -52,7 +52,9 @@ export class Token {
         let tableQuery
 
         if (symbolCode) {
-            tableQuery = table.get(String(symbolCode), {index_position: 'primary'})
+            tableQuery = table.get(Asset.SymbolCode.from(symbolCode).value, {
+                index_position: 'primary',
+            })
         } else {
             tableQuery = table.get()
         }
